@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Diagnostic & Predictive Intelligence</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">✦</span>
+                <h1>AURA<span>MED</span></h1>
+                <span class="badge">Predictive Diagnostic Engine</span>
+            </div>
+            <div class="header-status" id="connection-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">Connected to Engine</span>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <div class="dashboard-grid">
+            <!-- Sidebar: Settings & Controls -->
+            <aside class="sidebar card">
+                <h2 class="section-title"><span class="number">01</span> Configuration</h2>
+                
+                <!-- Dataset Selection -->
+                <div class="config-group">
+                    <label class="config-label">Select Disease Dataset</label>
+                    <div class="dataset-cards">
+                        <button class="dataset-card active" data-dataset="heart_disease">
+                            <div class="card-icon">❤️</div>
+                            <div class="card-info">
+                                <h3>Heart Disease</h3>
+                                <p>Cleveland Clinic</p>
+                            </div>
+                        </button>
+                        <button class="dataset-card" data-dataset="diabetes">
+                            <div class="card-icon">🩸</div>
+                            <div class="card-info">
+                                <h3>Diabetes</h3>
+                                <p>Pima Indian Women</p>
+                            </div>
+                        </button>
+                        <button class="dataset-card" data-dataset="breast_cancer">
+                            <div class="card-icon">🎗️</div>
+                            <div class="card-info">
+                                <h3>Breast Cancer</h3>
+                                <p>Wisconsin Diagnostic</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Algorithm Selection -->
+                <div class="config-group">
+                    <label class="config-label">Machine Learning Classifier</label>
+                    <div class="custom-select-wrapper">
+                        <select id="algorithm-select" class="custom-select">
+                            <option value="random_forest">Random Forest Classifier (Ensemble)</option>
+                            <option value="xgboost">XGBoost (Gradient Boosted Trees)</option>
+                            <option value="svm">Support Vector Machine (RBF Kernel)</option>
+                            <option value="logistic_regression">Logistic Regression (L2 Regularized)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Train Trigger Button -->
+                <button id="train-btn" class="btn primary-btn btn-glow">
+                    <span class="btn-text">Train & Compile Model</span>
+                    <span class="spinner hidden"></span>
+                </button>
+                
+                <div class="quick-stats" id="active-model-meta">
+                    <p>Active Model: <span class="highlight" id="lbl-active-algo">Random Forest</span></p>
+                    <p>Dataset: <span class="highlight" id="lbl-active-ds">Heart Disease</span></p>
+                </div>
+            </aside>
+
+            <!-- Main Panel: Output, Charts, & Predictions -->
+            <main class="main-content">
+                <!-- Navigation Tabs -->
+                <nav class="content-tabs">
+                    <button class="tab-link active" data-tab="tab-predictor">Interactive Diagnostic Tool</button>
+                    <button class="tab-link" data-tab="tab-evaluation">Model Analytics & Validation</button>
+                    <button class="tab-link" data-tab="tab-eda">Exploratory Data Analysis</button>
+                </nav>
+
+                <!-- Tab 1: Interactive Predictor -->
+                <section id="tab-predictor" class="tab-panel active">
+                    <div class="split-view">
+                        <!-- Input Form Card -->
+                        <div class="card form-card">
+                            <h2 class="section-title"><span class="number">02</span> Patient Demographics & Bio-metrics</h2>
+                            <p class="panel-subtitle">Fill in the fields below to run real-time classification inference.</p>
+                            <form id="prediction-form" class="dynamic-grid-form">
+                                <!-- Generated Dynamically by app.js -->
+                            </form>
+                            <div class="form-actions">
+                                <button id="predict-btn" class="btn success-btn">
+                                    <span>Execute Diagnostic Inference</span>
+                                </button>
+                                <button id="reset-form-btn" class="btn secondary-btn">Reset Fields</button>
+                            </div>
+                        </div>
+
+                        <!-- Prediction Outcome Card -->
+                        <div class="card result-card">
+                            <h2 class="section-title"><span class="number">03</span> Diagnostic Output</h2>
+                            <p class="panel-subtitle">Assessment generated by trained classifier.</p>
+                            
+                            <div class="result-placeholder" id="result-placeholder">
+                                <div class="pulse-icon">🧬</div>
+                                <h3>Awaiting Patient Inputs</h3>
+                                <p>Provide patient biometric data in the form and click "Execute Diagnostic Inference" to view diagnostic probability and classification.</p>
+                            </div>
+
+                            <div class="result-display hidden" id="result-display">
+                                <div class="risk-gauge-container">
+                                    <svg class="risk-gauge" viewBox="0 0 100 100">
+                                        <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                        <circle class="gauge-fill" id="gauge-fill" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                    </svg>
+                                    <div class="gauge-overlay">
+                                        <span class="gauge-percent" id="risk-percent">0%</span>
+                                        <span class="gauge-label">Risk Level</span>
+                                    </div>
+                                </div>
+
+                                <div class="assessment-box" id="assessment-box">
+                                    <h3 id="assessment-title">NEGATIVE</h3>
+                                    <p id="assessment-details">The classifier predicts low likelihood of disease based on the parameters provided.</p>
+                                </div>
+
+                                <div class="result-breakdown">
+                                    <h4>Factors Overview</h4>
+                                    <div class="factor-list" id="factor-list">
+                                        <!-- Feature values checklist goes here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab 2: Model Evaluation & Validation -->
+                <section id="tab-evaluation" class="tab-panel">
+                    <div class="evaluation-grid">
+                        <!-- Key Metrics Card -->
+                        <div class="card metric-summary-card">
+                            <h2 class="section-title"><span class="number">M1</span> Evaluation Metrics</h2>
+                            <p class="panel-subtitle">Classification metrics evaluated on a 25% holdout test dataset.</p>
+                            <div class="metrics-grid">
+                                <div class="metric-box">
+                                    <div class="metric-value" id="val-accuracy">--</div>
+                                    <div class="metric-label">Accuracy</div>
+                                    <div class="metric-progress"><div class="bar" id="bar-accuracy"></div></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-value" id="val-precision">--</div>
+                                    <div class="metric-label">Precision</div>
+                                    <div class="metric-progress"><div class="bar" id="bar-precision"></div></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-value" id="val-recall">--</div>
+                                    <div class="metric-label">Recall</div>
+                                    <div class="metric-progress"><div class="bar" id="bar-recall"></div></div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-value" id="val-f1">--</div>
+                                    <div class="metric-label">F1-Score</div>
+                                    <div class="metric-progress"><div class="bar" id="bar-f1"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confusion Matrix -->
+                        <div class="card cm-card">
+                            <h2 class="section-title"><span class="number">M2</span> Confusion Matrix</h2>
+                            <p class="panel-subtitle">Summary of correct and incorrect predictions.</p>
+                            <div class="cm-table">
+                                <div class="cm-header-row">
+                                    <div class="cm-cell empty"></div>
+                                    <div class="cm-header-cell">Predicted Negative</div>
+                                    <div class="cm-header-cell">Predicted Positive</div>
+                                </div>
+                                <div class="cm-row">
+                                    <div class="cm-side-cell">Actual Negative</div>
+                                    <div class="cm-cell metric-cm-val" id="cm-tn">0<span class="cm-sub">True Negative</span></div>
+                                    <div class="cm-cell metric-cm-val error-cell" id="cm-fp">0<span class="cm-sub">False Positive</span></div>
+                                </div>
+                                <div class="cm-row">
+                                    <div class="cm-side-cell">Actual Positive</div>
+                                    <div class="cm-cell metric-cm-val error-cell" id="cm-fn">0<span class="cm-sub">False Negative</span></div>
+                                    <div class="cm-cell metric-cm-val success-cell" id="cm-tp">0<span class="cm-sub">True Positive</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ROC Curve -->
+                        <div class="card roc-card">
+                            <h2 class="section-title"><span class="number">C1</span> ROC Curve</h2>
+                            <p class="panel-subtitle">Receiver Operating Characteristic Curve (AUC: <span id="val-auc">--</span>)</p>
+                            <div class="chart-container">
+                                <canvas id="rocChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Feature Importance -->
+                        <div class="card importance-card">
+                            <h2 class="section-title"><span class="number">F1</span> Feature Importances</h2>
+                            <p class="panel-subtitle">Weighted contribution of parameters towards prediction decisions.</p>
+                            <div class="chart-container">
+                                <canvas id="importanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab 3: Exploratory Data Analysis -->
+                <section id="tab-eda" class="tab-panel">
+                    <div class="eda-grid">
+                        <!-- Dataset Summary Info -->
+                        <div class="card info-summary-card">
+                            <h2 class="section-title"><span class="number">E1</span> Dataset Overview</h2>
+                            <div class="eda-counts-container">
+                                <div class="chart-box">
+                                    <canvas id="classDistChart"></canvas>
+                                </div>
+                                <div class="eda-stats-text" id="eda-summary-text">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Correlations Chart -->
+                        <div class="card correlations-card">
+                            <h2 class="section-title"><span class="number">E2</span> Target Correlations</h2>
+                            <p class="panel-subtitle">Linear correlation of biometric features relative to outcome.</p>
+                            <div class="chart-container">
+                                <canvas id="correlationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Developed with premium styling and performance algorithms. AuraMed v1.0.0 © 2026.</p>
+        </footer>
+    </div>
+</body>
+</html>
